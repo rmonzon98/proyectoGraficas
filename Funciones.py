@@ -70,10 +70,10 @@ class ClaseBMP(object):
         """
         "pinta" el bitmap de un color
         """
-        def clear(self, r=140, b=120, g=50):
+        def clear(self, r=0, b=139, g=0):
                 self.framebuffer =[
                         [
-                                self.color(r,b,g)
+                                self.color(r,g,b)
                                         for x in range(self.width)
                         ]
                         for y in range(self.height)
@@ -88,7 +88,7 @@ class ClaseBMP(object):
                         r = 0
                         g = 0
                         b = 0
-                return bytes([int(b), int(g), int(r)])
+                return bytes([b,g,r])
 
         """
         Cambia color de un pixel en especifico que esta dentro de los limites
@@ -110,6 +110,8 @@ class ClaseBMP(object):
         def getZBValue(self,x,y):
                 if x<self.width and y<self.height:
                         return self.zbuffer[x][y]
+                else:
+                	return -float("inf")
                 
 
 """
@@ -204,7 +206,7 @@ class OBJCTF(object):
                                 self.tvert.append((float(line[0]), float(line[1])))
                 if len(indice)<2 and self.materials:
                         indice.append(contFaces)
-                        self.materialF.append((indice,mtlactual))
+                        self.materialF.append((indice,mtlActual))
                         indice=[indice[1]+1]
                 print("Archivo .obj analizado!!! :)")
                 doc.close()
@@ -241,7 +243,7 @@ class class_MTL(object):
                 self.nombreArchivo=nombreArchivo
                 self.readMTL()
                 self.materials={}
-                self.archivo=None
+                self.archivo=self.readMTL()
 
         """
         Verifica que el doc con el .obj este abierto
@@ -253,12 +255,12 @@ class class_MTL(object):
         lee archivo .MTL
         """
         def readMTL(self):
-                try:
-                        file =open(nombreArchivo,"r")
-                        print(file.readline())
-                        self.mtldoc= True
-                except:
-                        self.mtldoc=False
+        	try:
+        		file = open(self.nombreArchivo,"r")
+        		self.mtldoc= True
+        		return file
+        	except Exception as e:
+        		self.mtldoc=False
 
         """
         Analiza el archivo .mtl y guarda los materiales
@@ -283,7 +285,7 @@ class class_MTL(object):
                                         emissiveC=(float(linea[1]), float(linea[2]), float(linea[3]))
                                 #Encontramos Shininess
                                 elif linea[0]=="Ns":
-                                        shini=float(line[1])
+                                        shini=float(linea[1])
                                 #Encontramos difuse color
                                 elif linea[0]=="Kd":
                                         difuseColor= (float(linea[1]), float(linea[2]), float(linea[3]))

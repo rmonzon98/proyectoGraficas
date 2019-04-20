@@ -47,7 +47,8 @@ class SR(object):
     valores rgb
     """
     def glColor(self,r,g,b):
-        self.color=self.drawing.color(r,g,b)
+        self.color=self.drawing.color(int(r*255),int(g*255),int(b*255))
+        return self.color
 
     """
     Define el tamaño de la imagen
@@ -97,45 +98,6 @@ class SR(object):
         self.drawing.point(coorx,coory+1,self.color)
         self.drawing.point(coorx+1,coory,self.color)
         self.drawing.point(coorx+1,coory+1,self.color)
-
-    """
-    Renderizar la rejilla de la textura
-    """
-    def glTexturedGrid(self,filename=None,newfile=True,translate=(0, 0), scale=(1, 1)):
-        if self.obj:
-            tvertex=self.obj.getTVertex()
-            materials=self.obj.geMaterials()
-            faces=self.obj.getFacesL()
-            if (filename and newfile):
-                square=SR()
-                square.glInit()
-                square.glCreateWindow(self.drawing.width,self.drawing.height)
-                square.glViewPort(self.PortStart[0],self.PortStart[1], self.Portsize[0], self.Portsize[1])
-                square.setfname(filename)
-            else:
-                square =self
-            if materials:
-                indice=self.obj.getMaterialF()
-                for mat in indice:
-                    dc=materials[mat[1]].difuseColor
-                    for j in range(mat[0][0], mat[0][1]):
-                        textc=[]
-                        for face in faces[j]:
-                            if len(face)>2:
-                                txt=((tvertex[face[2]-1][0]+ translate[0]) * scale[0], (tvertex[face[2]-1][1]+ translate[1]) * scale[1], 0)
-                                textc.append(txt)
-                            if len(textc)>2:
-                                square.glPolygon(textCoo)
-            else:
-                for face in faces:
-                    textc=[]
-                    for c in face:
-                        if len(c)>2:
-                            txt=((tvertex[c[2]-1][0]+ translate[0]) * scale[0], (tvertex[c[2]-1][1]+ translate[1]) * scale[1],0)
-                            textc.append(txt)
-                        if len(textc)>2:
-                            square.glPolygon(textc)
-            return square
                     
     
     """
@@ -147,58 +109,6 @@ class SR(object):
     def calculateCoordyVert(y):
         return int(self.Portsize[1]*(y+1)*(1/2)*self.PortStart[1])
     """
-    """
-    Dibuja una linea
-    Parametros:
-    x0: punto x inicial
-    y0: punto y inicial
-    x1: punto x final
-    y1: punto y final
-    """
-    def glLine(self,x0,y0,x1,y1):
-        a=self.PortStart[0]
-        b=self.PortStart[1]
-        a1=self.Portsize[0]*(1/2)
-        b1=self.Portsize[1]*(1/2)
-        px1=int(a1*(x0+1)+a)
-        py1=int(b1*(y0+1)+b)
-        px2=int(a1*(x1+1)+a)
-        py2=int(a1*(y1+1)+b)
-        dy=abs(y2-y1)
-        dx=abs(x2-x1)
-        if (dy>dx):
-            px1,py1=py1,px1
-            px2,py2=py2,px2
-        else:
-            px1,px2=px2,px1
-            py1,py2=py2,py1
-        dy=abs(y2-y1)
-        dx=abs(x2-x1)
-        temp=0
-        temp2=dx
-        y=py1
-        for x in range(px1,px2+1):
-            if (dy>dx):
-                self.drawing.point(y,x,self.color)
-            else:
-                self.drawing.point(x,y,self.color)
-            temp += dy*2
-            if temp >= temp2:
-                y +=1 if py1<py2 else -1
-                temp2 += 2 * dx
-    """
-    Normalizar coordenadas en x y y respectivamente
-    """
-    def glnormalX(self,x):
-        return ((2*x)/self.Portsize[0]) - self.PortStart[0] - 1
-    def glnormalY(self,y):
-        return ((2*y)/self.Portsize[1]) - self.PortStart[1] - 1
-
-    def norInvX(self,x):
-        return int(self.viewPortsize[0] * (x+1) * (1/2) + self.viewPortStart[0])
-    def norInvY(self,y):
-        return int(self.viewPortsize[0] * (y+1) * (1/2) + self.viewPortStart[0])
-
     def norm(self,v0):
         v=self.length(v0)
         if not v:
@@ -214,7 +124,7 @@ class SR(object):
         bari=self.calculateCross(vertice1,vertice2)
         if abs(bari[2])<1:
             return -1,-1,-1
-        return ( 1 - (bar[0] + bar[1]) / bar[2], bar[1] / bar[2], bar[0] / bar[2])
+        return ( 1 - (bari[0] + bari[1]) / bari[2], bari[1] / bari[2], bari[0] / bari[2])
 
     """
     Dibujar triangulos
@@ -246,9 +156,9 @@ class SR(object):
                 q=a[2]*m+b[2]*n+c[2]*o
                 if x<0 or y<0:
                     continue
-                if z>self.drawing.getZBValue(x,y):
-                    self.drawing.point(x,y,color)
-                    self.drawing.setZBValue(x,y,z)
+                if q>self.drawing.getZBValue(x,y):
+                	self.drawing.point(x,y,color)
+                	self.drawing.setZBValue(x,y,q)
                     
     """
     Definir un cuadro delimitador
@@ -259,91 +169,6 @@ class SR(object):
         xs.sort()
         ys.sort()
         return (xs[0],ys[0]),(xs[-1],ys[-1])
-        
-    """
-    Dibujar poligono
-    Recibe lista de vertices
-    """
-    def glPolygon(self,listV):
-        for i in range(len(listV)):
-            if i==len(listV)-1:
-                st=listV[i]
-                fi=listV[i+1]
-            else:
-                st=listV[i]
-                fi=listV[0]
-            self.glLine(fi[0],fi[1],st[0],st[1])
-            
-    """
-    Verifica si un punto esta dentro del poligono dibujado,
-    basado en el algoritmo encontrado en http://www.eecs.umich.edu/courses/eecs380/HANDOUTS/PROJ2/InsidePoly.html
-    solucion 1 (2D)
-    """
-    def glPointInside(self,listV,x,y):
-        contador=0
-        point1=listV[0]
-        n=len(listV)
-        for i in range(n+1):
-            point2= listV[i%n]
-            if(y>min(point1[1],point2[1])):
-               if (y<=max(point1[1],point2[1])):
-                   if(point1[1] != point2[1]):
-                       pointxint = (y-point1[1])*(point2[0]-point1[0])/(point2[1]-point1[1])+point1[0]
-                       if(point1[0] == point2[0] or x <= pointxint):
-                           contador+=1
-        if(contador%2==0):
-            return False
-        else:
-            return True
-        
-    """
-    Rellenar poligono
-    parametros:
-    listV:lista de vertices
-    color
-    texture
-    intensity
-    txtcoor=coordenadas de la textura
-    """
-    def glFill(self, listV, color=None, texture=None, intensity=1, txtcoor = (), zVal=True):
-        intensidad=intensity
-        if not texture:
-            if color==None:
-                color=self.color
-            else:
-                color=self.drawing.color(int(color[0]),int(color[1]),int(color[2]))
-        else:
-            if self.text==None:
-                text=Texture(texture)
-                self.text=text
-            else:
-                text=self.text
-        startX = sorted(listV, key=lambda tup: tup[0])[0][0]
-        finishX = sorted(listV, key=lambda tup: tup[0], reverse = True)[0][0]
-        startY = sorted(listV, key=lambda tup: tup[1])[0][1]
-        finishY = sorted(listV, key=lambda tup: tup[1], reverse=True)[0][1]
-        startX = int(self.Portsize[0] * (startX+1) * (1/2) + self.PortStart[0])
-        finishX = int(self.Portsize[0] * (finishX+1) * (1/2) + self.PortStart[0])
-        startY = int(self.Portsize[0] * (startY+1) * (1/2) + self.PortStart[0])
-        finishY = int(self.Portsize[0] * (finishY+1) * (1/2) + self.PortStart[0])
-        for x in range(startX,finishX+1):
-            for y in range(startX,finishX+1):
-                dentro=self.glPointInside(listV,self.glnormalX(x), self.glnormalY(y))
-                if dentro:
-                    if texture:
-                        r=self.norInvX(listV[0][0]),self.norInvX(listV[0][1])
-                        a=self.norInvX(listV[1][0]),self.norInvX(listV[1][1])
-                        u=self.norInvX(listV[2][0]),self.norInvX(listV[2][1])
-                        l,m,o=self.bar(r,a,u,x,y)
-                        r=txtcoor[0]
-                        a=txtcoor[1]
-                        u=txtcoor[2]
-                        tx=r[0]*l+a[0]*m+u[0]*o
-                        ty=r[1]*l+a[1]*m+u[1]*o
-                    z=self.glPLaneZ(listV, x, y)
-                    if z>self.drawing.getZBValue(x,y):
-                        self.drawing.point(x,y,color)
-                        self.drawing.setZBValue(x,y,z)
 
     """
     Calcular producto punto
@@ -377,34 +202,14 @@ class SR(object):
     """
     def calculatePQ(self,p,q):
         return [q[0]-p[0],q[1]-p[1],q[2]-p[2]]
-
-    """
-    coordenada z en el punto (x,y,z)
-    """
-    def glPlaneZ(self,vertecList,x,y):
-        pq=self.calculatePQ(vertexList[0],vertexList[1])
-        prs=self.calculatePQ(vertexList[0],vertexList[2])
-        normal=self.calculateCross(pq,pr)
-        if normal[2]:
-            return ((normal[0]*(x-vertexList[0][0])) + (normal[1]*(y-vertexList[0][1])) - (normal[2]*vertexList[0][2]))/(-normal[2])
-        else:
-            return -float("inf")
-
-    """
-    """
-    def glRenderZBuffer(self,namef=None):
-        if namef==None:
-            namef=self.namef.split(".")[0]+"ZBuffer.bmp"
-        self.drawing.write(namef,zbuffer=True)
-
     """
     Cargar obj
     """
     def loadOBJ(self, filename, translate=(0, 0, 0), scale=(1, 1, 1), fill=True, textured=None, rotate=(0, 0, 0), shader=None):
         self.obj= OBJCTF(filename)
         self.obj.load()
-        self.model(translate,scale,rotate)
-        light=self.norm((0,0,1))
+        self.modelm(translate,scale,rotate)
+        light=(0,0,1)
         faces=self.obj.getFacesL()
         vertex=self.obj.getVertexL()
         vn=self.obj.getVertexNormalL()
@@ -416,10 +221,10 @@ class SR(object):
             for mats in mtlFaces:
                 inicio,final=mats[0]
                 color=materials[mats[1]].difuseColor
-                for index in range (start,stop):
+                for index in range (inicio,final):
                     face =faces[index]
                     cont=len(face)
-                    if con==3:
+                    if cont==3:
                         c1=face[0][0]-1
                         c2=face[1][0]-1
                         c3=face[2][0]-1
@@ -437,7 +242,7 @@ class SR(object):
                             if not(self.text.textured()):
                                 if intensity<0:
                                     continue
-                                self.triangulo(a,b,c,color=color.self.glColor(color[0]*intensity, color[1]*intensity, color[2]*intensity))
+                                self.triangulo(a,b,c,color=self.glColor(color[0]*intensity, color[1]*intensity, color[2]*intensity))
         else:
             print("No se encontraron materiales para "+filename)
             for face in faces:
@@ -499,86 +304,45 @@ class SR(object):
                             tc=tVertex[t3]
                             td=tVertex[t4]
                             self.triangulo(a,b,c,texture=self.text.isTextured(), texture_coords=(ta, tb, tc), intensity=intensity)
-                            self.triangulo(a,b,d,texture=self.text.isTextured(), texture_coords=(ta, tb, td), intensity=intensity)        
+                            self.triangulo(a,b,d,texture=self.text.isTextured(), texture_coords=(ta, tb, td), intensity=intensity)
 
-    """
-    USO DE LAS MATRICES
-    Multiplicacion de matrices
-    parametros:
-    m1,m2: matrices
-    """
-    def matMul(self,m1,m2):
-        if len(m1[0])==len(m2):
-            result=[]
-            rows1=len(m1)
-            rows2=len(m2)
-            col1=len(m1[0])
-            col2=len(m2[0])
-            for i in range(rows1):
-                resultado.append([0]*col2)
-            for i in range(rows1):
-                for j in range(col2):
-                    for k in range(col1):
-                        resutlado[i][j]=m1[i][k]*m2[k][j]
-            return resultado
-        else:
-            print ("Error al multiplicar matrices")
-            return 0
+    def modelm(self, translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0, 0, 0)):
+        translation_MTX = MTX([[1, 0, 0, translate[0]],[0, 1, 0, translate[1]],[0, 0, 1, translate[2]],[0, 0, 0, 1],])
+        a = rotate[0]
+        rotation_MTX_x = MTX([[1, 0, 0, 0],[0, cos(a), -sin(a), 0],[0, sin(a),  cos(a), 0],[0, 0, 0, 1]])
+        a = rotate[1]
+        rotation_MTX_y = MTX([[cos(a), 0,  sin(a), 0],[     0, 1,       0, 0],[-sin(a), 0,  cos(a), 0],[     0, 0,       0, 1]])
+        a = rotate[2]
+        rotation_MTX_z = MTX([[cos(a), -sin(a), 0, 0],[sin(a),  cos(a), 0, 0],[0, 0, 1, 0],[0, 0, 0, 1]])
+        rotation_MTX = rotation_MTX_x * rotation_MTX_y * rotation_MTX_z
+        scale_MTX = MTX([[scale[0], 0, 0, 0],[0, scale[1], 0, 0],[0, 0, scale[2], 0],[0, 0, 0, 1],])
+        self.Model = translation_MTX * rotation_MTX * scale_MTX
 
-    """
-    generar proyeccion
-    """
-    def projMTX(self,c):
-        self.Projection=MTX([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 1, 0],[0, 0, c, 1]])
+    def viewm(self, x, y, z, center):
+        m = MTX([[x[0], x[1], x[2],  0],[y[0], y[1], y[2], 0],[z[0], z[1], z[2], 0],[0,0,0,1]])
+        o = MTX([[1, 0, 0, -center[0]],[0, 1, 0, -center[1]],[0, 0, 1, -center[2]],[0, 0, 0, 1]])
+        self.View = m * o
+
+    def projectionm(self, coeff):
+       	self.Projection = MTX([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 1, 0],[0, 0, coeff, 1]])
+
+    def viewportm(self, x=0, y =0):
+       	self.Viewport =  MTX([[self.drawing.width/2, 0, 0, x + self.drawing.width/2],[0, self.drawing.height/2, 0, y + self.drawing.height/2],[0, 0, 128, 128],[0, 0, 0, 1]])
         
-    """
-    generar vista
-    """
-    def viewMTX4(self,x,y,z,center):
-        n=MTX([[x[0], x[1], x[2],  0],[y[0], y[1], y[2], 0],[z[0], z[1], z[2], 0],[0,0,0,1]])
-        m=MTX([[1, 0, 0, -center[0]],[0, 1, 0, -center[1]],[0, 0, 1, -center[2]],[0, 0, 0, 1]])
-        self.View=n*m
-    
-    """
-    generar viewport Matrix
-    """
-    def viewMTX(self,x=0,y=0):
-        self.Viewport =MTX([[self.drawing.width/2, 0, 0, x + self.drawing.width/2],[0, self.drawing.height/2, 0, y + self.drawing.height/2],[0, 0, 128, 128],[0, 0, 0, 1]])
-    """
-    generar modelo
-    """
-    def model(self,translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0, 0, 0)):
-        transMTX=MTX([[1, 0, 0, translate[0]],[0, 1, 0, translate[1]],[0, 0, 1, translate[2]],[0, 0, 0, 1],])
-        a=rotate[0]
-        rotMTXAxisX=MTX([[1,0,0,0],[0, cos(a), -sin(a), 0],[0, sin(a),cos(a),0],[0, 0, 0, 1]])
-        a=rotate[1]
-        rotMTXAxisy=MTX([[cos(a),0, sin(a),0],[0, 1,0, 0],[-sin(a), 0,  cos(a), 0],[0,0,0,1]])
-        a=rotate[2]
-        rotMTXAxisz=MTX([[cos(a), -sin(a), 0, 0],[sin(a),  cos(a), 0, 0],[0, 0, 1, 0],[0, 0, 0, 1]])
-        result=  rotMTXAxisz* rotMTXAxisy* rotMTXAxisX
-        scaleMTX=MTX([[scale[0], 0, 0, 0],[0, scale[1], 0, 0],[0, 0, scale[2], 0],[0, 0, 0, 1],])
-        self.Model=result*transMTX*scaleMTX        
-        
-    """
-    transformar matriz
-    """
-    def trans(self,v):
-        a=MTX([[v[0]],[v[1]],[v[2]],[1]])
-        vTrans=self.Viewport * self.Projection * self.View * self.Model * a
-        vTrans=vTrans.getData()
-        transform=[round(vTrans[0][0]/vTrans[3][0]), round(vTrans[1][0]/vTrans[3][0]), round(vTrans[2][0]/vTrans[3][0])]
-        return transform
+    def aim(self, eye, center, up):
+       	z = self.norm(self.sub(eye, center))
+       	x = self.norm(self.calculateCross(up, z))
+       	y = self.norm(self.calculateCross(z,x))
+       	self.viewm(x, y, z, center)
+       	self.projectionm(-1/self.length(self.sub(eye, center)))
+       	self.viewportm()
 
-    """
-    Ver en una parte en especifica de la matriz
-    """
-    def aim(self,eye,up,cent):
-        z=self.norm(self.sub(eye,cent))
-        x=self.norm(self.calculateCross(up,z))
-        y=self.norm(self.calculateCross(z,x))
-        self.projMTX(-1/self.length(self.sub(eye, cent)))
-        self.viewMTX4(x, y, z, cent)
-        self.viewMTX()
+    def trans(self, vertex):
+       	agv = MTX([[vertex[0]],[vertex[1]],[vertex[2]],[1]])
+       	transformed_vertex = self.Viewport * self.Projection * self.View * self.Model * agv
+       	transformed_vertex = transformed_vertex.getData()
+       	tra = [round(transformed_vertex[0][0]/transformed_vertex[3][0]), round(transformed_vertex[1][0]/transformed_vertex[3][0]), round(transformed_vertex[2][0]/transformed_vertex[3][0])]
+       	return tra
 
     """
     TERMINA USO DE MATRICES
