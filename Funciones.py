@@ -13,8 +13,10 @@ Clase que representa archivo Bitmap
 class ClaseBMP(object):
 
         def write(self, filename):
-                """
+
+                
                 file = open(filename, "bw")
+                """
                 file.write(self.char('B'))
                 file.write(self.char('M'))
                 file.write(self.dword(14 + 40 + self.width * self.height * 3))
