@@ -60,6 +60,7 @@ class ClaseBMP(object):
                                         file.write(self.char("c"))
                 file.close()
                 """
+        
         def char(self,c):
                 return struct.pack("=c", c.encode("ascii"))
         
@@ -69,13 +70,8 @@ class ClaseBMP(object):
         def dword(self,c):
                 return struct.pack("=l", c)
 
-        def padding(self, base,c):
-                if(c % base== 0):
-                        return c
-                else:
-                        while (c%base):
-                                c +=1
-                        return c
+        
+
 
         """
         Inicializa valores del archivo (constructor)
@@ -116,20 +112,20 @@ class ClaseBMP(object):
         """
         def point(self,x,y,color):
                 if(x < self.width and y < self.height):
-                        self.framebuffer[x][y] =color
+                        self.framebuffer[y][x] =color
 
         """
         sets
         """
         def setZBValue(self, x,y,value):
                 if x<self.width and y<self.height:
-                        self.zbuffer[x][y]=value
+                        self.zbuffer[y][x]=value
         """
         gets
         """
         def getZBValue(self,x,y):
                 if x<self.width and y<self.height:
-                        return self.zbuffer[x][y]
+                        return self.zbuffer[y][x]
                 else:
                 	return -float("inf")
                 
