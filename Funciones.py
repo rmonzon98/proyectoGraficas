@@ -14,6 +14,26 @@ class ClaseBMP(object):
 
         def write(self, filename):
                 file = open(filename, "bw")
+                file.write(self.char('B'))
+                file.write(self.char('M'))
+                file.write(self.dword(14 + 40 + self.width * self.height * 3))
+                file.write(self.dword(0))
+                file.write(self.dword(14 + 40))
+                file.write(self.dword(40))
+                file.write(self.dword(self.width))
+                file.write(self.dword(self.height))
+                file.write(self.word(1))
+                file.write(self.word(24))
+                file.write(self.dword(self.width * self.height * 3))
+                file.write(self.dword(0))
+                file.write(self.dword(0))
+                file.write(self.dword(0))
+                file.write(self.dword(0))
+                for x in range(self.height):
+                        for y in range(self.width):
+                                file.write(self.framebuffer[x][y])
+                file.close()
+                """
                 ancho_t = self.padding(4,self.width)
                 altura_t = self.padding(4,self.height)
                 file.write(self.char("B"))
@@ -39,15 +59,15 @@ class ClaseBMP(object):
                                 else:
                                         file.write(self.char("c"))
                 file.close()
-                
+                """
         def char(self,c):
-                return struct.pack("c", c.encode("ascii"))
+                return struct.pack("=c", c.encode("ascii"))
         
         def word(self,c):
-                return struct.pack("h", c)
+                return struct.pack("=h", c)
         
         def dword(self,c):
-                return struct.pack("l", c)
+                return struct.pack("=l", c)
 
         def padding(self, base,c):
                 if(c % base== 0):
