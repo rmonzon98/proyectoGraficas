@@ -13,6 +13,7 @@ Clase que representa archivo Bitmap
 class ClaseBMP(object):
 
         def write(self, filename):
+                """
                 file = open(filename, "bw")
                 file.write(self.char('B'))
                 file.write(self.char('M'))
@@ -36,18 +37,21 @@ class ClaseBMP(object):
                 """
                 ancho_t = self.padding(4,self.width)
                 altura_t = self.padding(4,self.height)
+                
                 file.write(self.char("B"))
                 file.write(self.char("M"))
-                file.write(self.dword(14 + 40 + ancho_t * altura_t))
+
+                file.write(self.dword(14 + 40 + self.width * self.height*3))
                 file.write(self.dword(0))
                 file.write(self.dword(14+40))
+
                 file.write(self.dword(40))
                 file.write(self.dword(self.width))
                 file.write(self.dword(self.height))
                 file.write(self.word(1))
                 file.write(self.word(24))
                 file.write(self.dword(0))
-                file.write(self.dword(ancho_t*altura_t))
+                file.write(self.dword(self.width*self.height*3))
                 file.write(self.dword(0))
                 file.write(self.dword(0))
                 file.write(self.dword(0))
@@ -59,8 +63,7 @@ class ClaseBMP(object):
                                 else:
                                         file.write(self.char("c"))
                 file.close()
-                """
-        
+                
         def char(self,c):
                 return struct.pack("=c", c.encode("ascii"))
         
@@ -70,8 +73,13 @@ class ClaseBMP(object):
         def dword(self,c):
                 return struct.pack("=l", c)
 
-        
-
+        def padding(self, base,c):
+                if(c % base== 0):
+                        return c
+                else:
+                        while (c%base):
+                                c +=1
+                        return c
 
         """
         Inicializa valores del archivo (constructor)
@@ -89,7 +97,7 @@ class ClaseBMP(object):
         def clear(self, r=0, b=139, g=0):
                 self.framebuffer =[
                         [
-                                self.color(b,g,r)
+                                self.color(r,g,b)
                                         for x in range(self.width)
                         ]
                         for y in range(self.height)
@@ -112,20 +120,20 @@ class ClaseBMP(object):
         """
         def point(self,x,y,color):
                 if(x < self.width and y < self.height):
-                        self.framebuffer[y][x] =color
+                        self.framebuffer[x][y] =color
 
         """
         sets
         """
         def setZBValue(self, x,y,value):
                 if x<self.width and y<self.height:
-                        self.zbuffer[y][x]=value
+                        self.zbuffer[x][y]=value
         """
         gets
         """
         def getZBValue(self,x,y):
                 if x<self.width and y<self.height:
-                        return self.zbuffer[y][x]
+                        return self.zbuffer[x][y]
                 else:
                 	return -float("inf")
                 
