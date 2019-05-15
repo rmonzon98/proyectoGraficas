@@ -89,7 +89,7 @@ class ClaseBMP(object):
         def clear(self, r=0, b=139, g=0):
                 self.framebuffer =[
                         [
-                                self.color(r,g,b)
+                                self.color(b,g,r)
                                         for x in range(self.width)
                         ]
                         for y in range(self.height)
